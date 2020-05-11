@@ -1,8 +1,10 @@
 package it.polito.tdp.extflightdelays;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.extflightdelays.model.Airport;
 import it.polito.tdp.extflightdelays.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,10 +30,10 @@ public class FXMLController {
     private TextField compagnieMinimo; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbBoxAeroportoPartenza"
-    private ComboBox<?> cmbBoxAeroportoPartenza; // Value injected by FXMLLoader
+    private ComboBox<Airport> cmbBoxAeroportoPartenza; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbBoxAeroportoDestinazione"
-    private ComboBox<?> cmbBoxAeroportoDestinazione; // Value injected by FXMLLoader
+    private ComboBox<Airport> cmbBoxAeroportoDestinazione; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnAnalizza"
     private Button btnAnalizza; // Value injected by FXMLLoader
@@ -42,10 +44,53 @@ public class FXMLController {
     @FXML
     void doAnalizzaAeroporti(ActionEvent event) {
 
+    	txtResult.clear();
+    	
+    	int x;
+    	
+    	try {
+    		 x = Integer.parseInt(compagnieMinimo.getText());
+    	}catch(Throwable t) {
+    		txtResult.appendText("errore nell' input!");
+    		return;
+    	}
+    	
+    	this.model.creaGrafo(x);
+    	txtResult.appendText("Grafo creato!\n");
+    	txtResult.appendText("# vertici: " + this.model.vertexNumber() + "#archi: " + this.model.edgeNumber());
+    
+    	cmbBoxAeroportoPartenza.getItems().addAll(this.model.getAreoporti());
+    	cmbBoxAeroportoDestinazione.getItems().addAll(this.model.getAreoporti());
     }
 
     @FXML
     void doTestConnessione(ActionEvent event) {
+    	
+    	txtResult.clear();
+    	
+    	Airport a1 = cmbBoxAeroportoPartenza.getValue();
+    	Airport a2 = cmbBoxAeroportoDestinazione.getValue();
+    	
+    	if(a1== null || a2 == null) {
+    		txtResult.appendText("selezione tutti gli areporti!");
+    		return;
+    	}
+    	
+    	List<Airport> percorso = null;
+    	
+    	try {
+    		 percorso = this.model.trovaPercorso(a1, a2);
+    		
+    				for(Airport a : percorso) {
+    			txtResult.appendText(a.getAirportName()+ "\n");
+    		}
+    	}catch(NullPointerException e ) {
+    		txtResult.appendText("i due Areoporti non sono collegati!");
+    		return;
+    	}
+    		
+    		
+    	
 
     }
 
@@ -62,5 +107,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	
     }
 }
